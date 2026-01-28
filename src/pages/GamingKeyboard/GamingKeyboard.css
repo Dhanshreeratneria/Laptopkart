@@ -1,0 +1,99 @@
+.gk-container {
+  background-color: #f3f4f6;
+  min-height: 100vh;
+  padding: 32px 16px;
+}
+
+.gk-wrapper {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.gk-heading {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.gk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.gk-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+  transition: 0.3s ease;
+}
+
+.gk-card:hover {
+  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.gk-image {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+}
+
+.gk-content {
+  padding: 16px;
+}
+
+.gk-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.gk-desc {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.gk-bottom {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gk-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.gk-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.gk-icon-btn {
+  padding: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.gk-icon-btn:hover {
+  background: #e5e7eb;
+}
+
+.gk-heart {
+  width: 20px;
+  height: 20px;
+  color: red;
+}
+
+.gk-cart {
+  width: 20px;
+  height: 20px;
+  color: green;
+}
