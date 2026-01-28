@@ -1,48 +1,102 @@
 import React, { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CartPage = () => {
   const { user } = useAuth();
+
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCart = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-      if (!userSnap.exists()) return;
+        if (!userSnap.exists()) {
+          setLoading(false);
+          return;
+        }
 
-      const userData = userSnap.data();
-      const cart = userData.cart || [];
-      setTotal(userData.totalAmount || 0);
+        const cart = userSnap.data().cart || [];
 
-      // Fetch product details for each item
-      const products = await Promise.all(
-        cart.map(async (item) => {
-          const productRef = doc(db, "products", item.productId);
-          const productSnap = await getDoc(productRef);
-          if (productSnap.exists()) {
+        const products = await Promise.all(
+          cart.map(async (item) => {
+            const productRef = doc(db, "products", item.productId);
+            const productSnap = await getDoc(productRef);
+
+            if (!productSnap.exists()) return null;
+
             return {
-              ...item,
+              id: item.productId,
+              quantity: item.quantity,
               ...productSnap.data(),
             };
-          }
-          return null;
-        })
-      );
+          })
+        );
 
-      setCartItems(products.filter(Boolean));
+        const validProducts = products.filter(Boolean);
+        setCartItems(validProducts);
+        calculateTotal(validProducts);
+      } catch (err) {
+        console.error("Failed to load cart:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchCart();
   }, [user]);
+
+  // ✅ CALCULATE TOTAL
+  const calculateTotal = (items) => {
+    const sum = items.reduce(
+      (acc, item) => acc + Number(item.price) * Number(item.quantity),
+      0
+    );
+    setTotal(sum);
+  };
+
+  // 🗑️ REMOVE ITEM
+  const removeFromCart = async (productId) => {
+    try {
+      const userRef = doc(db, "users", user.uid);
+
+      const updatedCart = cartItems
+        .filter((item) => item.id !== productId)
+        .map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        }));
+
+      await updateDoc(userRef, {
+        cart: updatedCart,
+      });
+
+      const updatedItems = cartItems.filter(
+        (item) => item.id !== productId
+      );
+
+      setCartItems(updatedItems);
+      calculateTotal(updatedItems);
+    } catch (error) {
+      console.error("Failed to remove item:", error);
+    }
+  };
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading cart...</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -59,9 +113,9 @@ const CartPage = () => {
         ) : (
           <>
             <ul className="space-y-4">
-              {cartItems.map((item, idx) => (
+              {cartItems.map((item) => (
                 <li
-                  key={idx}
+                  key={item.id}
                   className="border border-gray-200 rounded-lg p-4 flex items-center gap-4"
                 >
                   <img
@@ -69,16 +123,26 @@ const CartPage = () => {
                     alt={item.name}
                     className="w-24 h-24 object-cover rounded-lg"
                   />
+
                   <div className="flex-1">
                     <h3 className="font-bold text-lg">{item.name}</h3>
-                    <p className="text-sm text-gray-500 mb-1">
+                    <p className="text-sm text-gray-500">
                       Quantity: {item.quantity}
                     </p>
                     <p className="text-blue-600 font-semibold">
-                      ${item.price} x {item.quantity} = $
+                      ${item.price} × {item.quantity} = $
                       {(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
+
+                  {/* 🗑 REMOVE BUTTON */}
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    className="text-red-600 hover:text-red-800 transition"
+                    title="Remove from cart"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </li>
               ))}
             </ul>

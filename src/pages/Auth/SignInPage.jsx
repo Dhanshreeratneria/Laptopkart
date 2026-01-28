@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Mail, Lock, LogIn, UserRound } from "lucide-react";
+import { Mail, Lock, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/g.png";
-import user from "../../assets/user.png";
+import userIcon from "../../assets/user.png";
 import { toast } from "react-toastify";
 
 const SignInPage = () => {
@@ -16,8 +16,19 @@ const SignInPage = () => {
     e.preventDefault();
     try {
       await signInWithEmail(email, password);
+      navigate("/"); // ✅ redirect after login
     } catch (err) {
       toast.error(err.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      navigate("/"); // ✅ redirect
+    } catch (err) {
+      toast.error("Google sign-in failed");
+      console.error(err);
     }
   };
 
@@ -25,8 +36,7 @@ const SignInPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
-          <img src={user} alt="user" className="w-8 h-8 mr-2" />
-
+          <img src={userIcon} alt="user" className="w-8 h-8 mr-2" />
           <h2 className="text-2xl font-bold">Sign In</h2>
         </div>
 
@@ -67,7 +77,7 @@ const SignInPage = () => {
           <p className="text-gray-600 text-sm mb-2">OR</p>
 
           <button
-            onClick={signInWithGoogle}
+            onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center border border-gray-300 text-black font-medium py-2 rounded-full hover:shadow-sm transition"
           >
             <img src={googleIcon} alt="Google logo" className="w-5 h-5 mr-2" />

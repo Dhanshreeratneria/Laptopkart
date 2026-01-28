@@ -10,6 +10,7 @@ function GamingMouse() {
   useEffect(() => {
     const fetchGamingMice = async () => {
       const productsRef = collection(db, "products");
+      
       const q = query(productsRef, where("category", "==", "gamingmouse"));
       const snapshot = await getDocs(q);
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
